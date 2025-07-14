@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2025 TurboChat
  */
+
 (function (root, factory) {
   if (typeof module === "object" && module.exports) {
     module.exports = factory();
@@ -14,8 +15,8 @@
 })(this, function () {
   const defaults = {
     sides: 6,
-    count: 1,
-    modifier: 0,
+    count: 2,
+    containerSelector: ".dice-container",
     onRoll: null
   };
 
@@ -28,36 +29,41 @@
 
     init: function (options) {
       this.options = Object.assign({}, defaults, options);
+      this.container = document.querySelector(this.options.containerSelector);
+
+      if (!this.container) throw new Error("Dice container not found");
+
       return this;
     },
 
     roll: function () {
       const results = [];
-      let total = 0;
+      this.container.innerHTML = "";
 
       for (let i = 0; i < this.options.count; i++) {
-        const roll = Math.floor(Math.random() * this.options.sides) + 1;
-        results.push(roll);
-        total += roll;
+        const value = Math.floor(Math.random() * this.options.sides) + 1;
+        results.push(value);
+
+        const dice = document.createElement("div");
+        dice.className = "dice";
+        dice.textContent = value;
+
+        // Animate roll
+        requestAnimationFrame(() => {
+          dice.classList.add("roll");
+        });
+
+        this.container.appendChild(dice);
       }
-
-      total += this.options.modifier;
-
-      const output = {
-        rolls: results,
-        modifier: this.options.modifier,
-        total: total
-      };
 
       if (typeof this.options.onRoll === "function") {
-        this.options.onRoll(output);
+        this.options.onRoll(results);
       }
 
-      return output;
+      return results;
     }
   };
 
   DiceRoller.lib.init.prototype = DiceRoller.lib;
-
   return DiceRoller;
 });
